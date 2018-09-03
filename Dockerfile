@@ -29,8 +29,8 @@ RUN eval "$(rbenv init -)"
 RUN mkdir -p "$(rbenv root)"/plugins
 RUN git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
 
-RUN rbenv install 2.4.1
-RUN rbenv global 2.4.1
+RUN rbenv install 2.4.4
+RUN rbenv global 2.4.4
 RUN rbenv rehash
 
 RUN gem install bundler
