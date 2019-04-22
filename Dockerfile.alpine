@@ -4,21 +4,28 @@ RUN apk update
 RUN apk upgrade
 RUN apk add zlib-dev openssl-dev readline-dev yaml-dev libxml2-dev libxslt-dev libpq postgresql-dev py-pip git alpine-sdk curl git gnupg ca-certificates bash
 
-RUN pip install nodeenv
-RUN nodeenv -n 8.11.3 /node
-RUN /bin/bash -c ". /node/bin/activate"
+RUN wget https://nodejs.org/download/release/v8.11.3/node-v8.11.3.tar.gz -O /tmp/node.tar.gz
+RUN cd /tmp && tar -xzvf node.tar.gz && cd node-v8.11.3 && ./configure && make && make install && cd / && rm -rf /tmp/node-*
 
-ENV RBENV_ROOT /rbenv
-RUN git clone https://github.com/rbenv/rbenv.git /rbenv
+RUN echo $'if [ -d /etc/profile.d ]; then \n\
+  for i in /etc/profile.d/*.sh; do \n\
+    if [ -r $i ]; then \n\
+      . $i \n\
+    fi \n\
+  done \n\
+  unset i \n\
+fi\n\
+' >> /etc/profile
 
-RUN echo ". /node/bin/activate" > /etc/profile.d/node.sh
-ENV NODE_PATH "/node/lib/node_modules"
+RUN mkdir -p /etc/profile.d
 
-ENV PATH "/node/lib/node_modules/.bin:/node/bin:/node/$PATH"
+# ENV NODE_PATH "/node/lib/node_modules"
+
+# ENV PATH "/node/lib/node_modules/.bin:/node/bin:/node/$PATH"
 
 RUN gem install bundler
 
-# Fix puma build
-# See: https://github.com/puma/puma/issues/1136
+# # Fix puma build
+# # See: https://github.com/puma/puma/issues/1136
 RUN apk add openssl openssl-dev
 RUN bundle config build.puma --with-cppflags=-I/usr/include/openssl-1.0 --with-ldflags=-L/usr/lib/openssl-1.0
