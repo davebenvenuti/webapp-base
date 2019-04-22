@@ -1,0 +1,24 @@
+FROM ruby:2.4.6-alpine3.9
+
+RUN apk update
+RUN apk upgrade
+RUN apk add zlib-dev openssl-dev readline-dev yaml-dev libxml2-dev libxslt-dev libpq postgresql-dev py-pip git alpine-sdk curl git gnupg ca-certificates bash
+
+RUN pip install nodeenv
+RUN nodeenv -n 8.11.3 /node
+RUN /bin/bash -c ". /node/bin/activate"
+
+ENV RBENV_ROOT /rbenv
+RUN git clone https://github.com/rbenv/rbenv.git /rbenv
+
+RUN echo ". /node/bin/activate" > /etc/profile.d/node.sh
+ENV NODE_PATH "/node/lib/node_modules"
+
+ENV PATH "/node/lib/node_modules/.bin:/node/bin:/node/$PATH"
+
+RUN gem install bundler
+
+# Fix puma build
+# See: https://github.com/puma/puma/issues/1136
+RUN apk add openssl openssl-dev
+RUN bundle config build.puma --with-cppflags=-I/usr/include/openssl-1.0 --with-ldflags=-L/usr/lib/openssl-1.0
